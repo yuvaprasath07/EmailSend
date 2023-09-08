@@ -1,9 +1,13 @@
 using EmailSend.Service;
 using EmailSend.settings;
+using Entity.Entity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var conectionString = builder.Configuration.GetConnectionString("Emaill");
+builder.Services.AddDbContextPool<EntityDbcontext>(option => option.UseSqlServer(conectionString));
 builder.Configuration.AddJsonFile("appsettings.json");
 builder.Services.Configure<EmaillSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();

@@ -1,5 +1,6 @@
 ﻿using EmailSend.Model;
 using EmailSend.settings;
+using Entity.Entity;
 using MailKit.Security;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Options;
@@ -12,42 +13,35 @@ namespace EmailSend.Service
 {
     public class EmailService : IEmailService
     {
+        private readonly EntityDbcontext _entityDbcontext;
+        
         private readonly EmaillSettings _mailSettings;
-        public EmailService(IOptions<EmaillSettings> mailSettings)
+        public EmailService(IOptions<EmaillSettings> mailSettings, EntityDbcontext entityDbcontext)
         {
             _mailSettings = mailSettings.Value;
+            _entityDbcontext = entityDbcontext;
         }
 
-        public async Task SendEmailAsync(EmailInfo emailInfo)
+        public async Task SendEmailAsync()
         {
-            var email = new MimeMessage();
-            email.Sender = MailboxAddress.Parse(_mailSettings.EMail);
-            email.To.Add(MailboxAddress.Parse(emailInfo.EmailTo));
-            email.Subject = emailInfo.Subject;
-            var builder = new BodyBuilder();
-            if (emailInfo.Attachments != null)
+            var recipients = _entityDbcontext.EmployeeEmail.Select(e => e.Emaill).ToList();
+
+            foreach (var recipientEmail in recipients)
             {
-                byte[] fileBytes;
-                foreach (var file in emailInfo.Attachments)
-                {
-                    if (file.Length > 0)
-                    {
-                        using (var ms = new MemoryStream())
-                        {
-                            file.CopyTo(ms);
-                            fileBytes = ms.ToArray();
-                        }
-                        builder.Attachments.Add(file.FileName, fileBytes, ContentType.Parse(file.ContentType));
-                    }
-                }
+                var email = new MimeMessage();
+                email.Sender = MailboxAddress.Parse(_mailSettings.EMail);
+                email.To.Add(MailboxAddress.Parse(recipientEmail));
+                email.Subject = "Hii";
+                var builder = new BodyBuilder();
+                builder.HtmlBody = "<html><body><h1>Hi</h1></body></html>";
+                email.Body = builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+                smtp.Connect(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
+                smtp.Authenticate(_mailSettings.EMail, _mailSettings.Password);
+                await smtp.SendAsync(email);
+                smtp.Disconnect(true);
             }
-            builder.HtmlBody = emailInfo.Body;
-            email.Body = builder.ToMessageBody();
-            using var smtp = new SmtpClient();
-            smtp.Connect(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
-            smtp.Authenticate(_mailSettings.EMail, _mailSettings.Password);
-            await smtp.SendAsync(email);
-            smtp.Disconnect(true);
         }
     }
 }

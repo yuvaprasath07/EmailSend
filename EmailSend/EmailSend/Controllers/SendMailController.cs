@@ -17,12 +17,12 @@ namespace EmailSend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> MailSend([FromForm]EmailInfo source)
+        public async Task<IActionResult> MailSend()
         {
             try
             {
 
-                await _emailService.SendEmailAsync(source);
+                await _emailService.SendEmailAsync();
                 return Ok("successfully Send");
 
 
