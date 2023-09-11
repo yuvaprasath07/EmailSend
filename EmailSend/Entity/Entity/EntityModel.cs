@@ -12,7 +12,6 @@ namespace Entity.Entity
         [Key]
         public int Num { get; set; }
         public  string ?Name { get; set; }
-
         public string ? Emaill { get; set; }
     }
 }

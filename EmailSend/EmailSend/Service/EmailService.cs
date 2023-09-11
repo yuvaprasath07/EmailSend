@@ -31,9 +31,9 @@ namespace EmailSend.Service
                 var email = new MimeMessage();
                 email.Sender = MailboxAddress.Parse(_mailSettings.EMail);
                 email.To.Add(MailboxAddress.Parse(recipientEmail));
-                email.Subject = "Hii";
+                email.Subject = "HELLO";
                 var builder = new BodyBuilder();
-                builder.HtmlBody = "<html><body><h1>Hi</h1></body></html>";
+                builder.HtmlBody = "<html><body><h1>YuvaPrasath</h1></body></html>";
                 email.Body = builder.ToMessageBody();
 
                 using var smtp = new SmtpClient();
